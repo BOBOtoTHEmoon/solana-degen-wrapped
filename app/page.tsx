@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { DegenStats } from '@/types';
 import StatsDisplay from '@/components/StatsDisplay';
 import { getMockDegenStats, getMockDegenStatsWinner } from '@/lib/mockData';
+import { analyzeWallet } from '@/lib/analyzer'; 
 
 export default function Home() {
   const [walletAddress, setWalletAddress] = useState('');
@@ -24,17 +25,18 @@ const [loadingMessage, setLoadingMessage] = useState('');
   setLoadingMessage('Starting analysis...');
 
   try {
-    // Use REAL data now!
-    const { analyzeWallet } = await import('@/lib/analyzer');
-    const realStats = await analyzeWallet(walletAddress);
-    setStats(realStats);
-  } catch (err: any) {
-    setError(err.message || 'Failed to analyze wallet. Please try again.');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+ const realStats = await analyzeWallet(walletAddress, (msg: string) => {
+        setLoadingMessage(msg);
+      });
+      setStats(realStats);
+    } catch (err: any) {
+      setError(err.message || 'Failed to analyze wallet. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setLoadingMessage('');
+    }
+  };
 // Update loading display:
 {loading ? (
   <div className="flex flex-col items-center justify-center gap-3">
